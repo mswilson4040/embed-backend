@@ -1,14 +1,13 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var MongoDBConnection = /** @class */ (function () {
-    function MongoDBConnection(config) {
-        if (config) {
-            this.connectionString = config.connectionString;
-            this.databaseName = config.databaseName;
-            this.selectedCollections = config.selectedCollections;
-        }
-    }
-    return MongoDBConnection;
-}());
-exports.MongoDBConnection = MongoDBConnection;
+// export class MongoDBConnection {
+//     public connectionString: string;
+//     public databaseName: string;
+//     public selectedCollections: any[];
+//     constructor(config?) {
+//         if (config) {
+//             this.connectionString = config.connectionString;
+//             this.databaseName = config.databaseName;
+//             this.selectedCollections = config.selectedCollections;
+//         }
+//     }
+// }
 //# sourceMappingURL=mongo-connection.js.map

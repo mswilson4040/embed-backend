@@ -38,6 +38,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var mongodb_1 = require("mongodb");
 var mongo_db_connection_1 = require("../database/models/mongo-db-connection");
 var mongo_database_1 = require("../database/models/mongo-database");
+var mongo_db_configuration_1 = require("../database/models/mongo-db-configuration");
 var MongoConfigApi = /** @class */ (function () {
     function MongoConfigApi() {
         var _this = this;
@@ -75,6 +76,35 @@ var MongoConfigApi = /** @class */ (function () {
                 }
             });
         }); });
+        this.router.post('/databases/collections/fields', function (request, response) { return __awaiter(_this, void 0, void 0, function () {
+            var connection, collectionName, fields;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        connection = new mongo_db_connection_1.MongoDbConnection(request.body.connection);
+                        collectionName = request.body.collectionName;
+                        return [4 /*yield*/, this.getFieldsFromCollection(connection, collectionName)];
+                    case 1:
+                        fields = _a.sent();
+                        response.status(200).json(fields);
+                        return [2 /*return*/];
+                }
+            });
+        }); });
+        this.router.post('/save', function (request, response) { return __awaiter(_this, void 0, void 0, function () {
+            var config, savedConfig;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        config = new mongo_db_configuration_1.MongoDbConfiguration(request.body);
+                        return [4 /*yield*/, this.saveModel(config)];
+                    case 1:
+                        savedConfig = _a.sent();
+                        response.status(200).json(savedConfig);
+                        return [2 /*return*/];
+                }
+            });
+        }); });
         module.exports = this.router;
     }
     MongoConfigApi.prototype.connect = function (connection) {
@@ -86,6 +116,32 @@ var MongoConfigApi = /** @class */ (function () {
                     case 1:
                         client = _a.sent();
                         return [2 /*return*/, client];
+                }
+            });
+        });
+    };
+    MongoConfigApi.prototype.saveModel = function (config) {
+        return __awaiter(this, void 0, void 0, function () {
+            var client, db, collection, res, _config;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        config.mappingId = "config_" + new Date().getTime();
+                        return [4 /*yield*/, this.connect(config.getConnection())];
+                    case 1:
+                        client = _a.sent();
+                        db = client.db('embed');
+                        collection = db.collection('mongo-configs');
+                        return [4 /*yield*/, collection.updateOne({ mappingId: config.mappingId }, { $set: config }, { upsert: true })];
+                    case 2:
+                        res = _a.sent();
+                        return [4 /*yield*/, client.close()];
+                    case 3:
+                        _a.sent();
+                        return [4 /*yield*/, this.openModel(config.getConnection(), config.mappingId)];
+                    case 4:
+                        _config = _a.sent();
+                        return [2 /*return*/, _config];
                 }
             });
         });
@@ -124,6 +180,42 @@ var MongoConfigApi = /** @class */ (function () {
                     case 3:
                         _a.sent();
                         return [2 /*return*/, docs];
+                }
+            });
+        });
+    };
+    MongoConfigApi.prototype.getFieldsFromCollection = function (connection, collectionName) {
+        return __awaiter(this, void 0, void 0, function () {
+            var client, db, collection, one;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.connect(connection)];
+                    case 1:
+                        client = _a.sent();
+                        db = client.db(connection.databaseName);
+                        collection = db.collection(collectionName);
+                        return [4 /*yield*/, collection.findOne({})];
+                    case 2:
+                        one = _a.sent();
+                        client.close();
+                        return [2 /*return*/, Object.keys(one)];
+                }
+            });
+        });
+    };
+    MongoConfigApi.prototype.openModel = function (connection, mappingId) {
+        return __awaiter(this, void 0, void 0, function () {
+            var client, collection, config;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.connect(connection)];
+                    case 1:
+                        client = _a.sent();
+                        collection = client.db(connection.databaseName).collection('mongo-configs');
+                        return [4 /*yield*/, collection.find({ mappingId: mappingId }).toArray()];
+                    case 2:
+                        config = _a.sent();
+                        return [2 /*return*/, config];
                 }
             });
         });

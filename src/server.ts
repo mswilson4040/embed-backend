@@ -1,5 +1,5 @@
-import * as ModelerApi from './modeler/modelerApi';
-import * as DatabaseApi from './database/databaseApi';
+// import * as ModelerApi from './modeler/modelerApi';
+// import * as DatabaseApi from './database/databaseApi';
 import * as MongoConfigApi from './mongo/mongo-config-api';
 
 class Server {
@@ -23,8 +23,8 @@ class Server {
         this._app.use(this._bodyParser.json());
         this._app.use(this._express.static(this._path.join(__dirname + './')));
         this._app.use(this._cors());
-        this._app.use('/model', ModelerApi);
-        this._app.use('/database', DatabaseApi);
+        // this._app.use('/model', ModelerApi);
+        // this._app.use('/database', DatabaseApi);
         this._app.use('/mongo', MongoConfigApi);
 
 

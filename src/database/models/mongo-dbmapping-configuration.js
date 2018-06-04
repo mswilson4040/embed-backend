@@ -1,90 +1,87 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var MongoDBMappingConfiguration = /** @class */ (function () {
-    function MongoDBMappingConfiguration(config) {
-        var _this = this;
-        if (config) {
-            this.mappingName = config.mappingName;
-            this.connectionString = config.connectionString;
-            this.databaseName = config.databaseName;
-            this.mappingId = config.mappingId;
-            if (config.mapping) {
-                config.mapping.forEach(function (m) { return _this.addMapping(new MongoDBCollectionMapping(m)); });
-            }
-        }
-        else {
-            this.mappingId = this.generateId();
-        }
-    }
-    MongoDBMappingConfiguration.prototype.addMapping = function (mapping) {
-        this.mapping = this.mapping ? this.mapping : [];
-        var matchedCollection = this.doesMappingExist(mapping);
-        if (!matchedCollection) {
-            this.mapping.push(mapping);
-        }
-        else {
-            matchedCollection.primary = mapping.primary;
-            mapping.fields.forEach(function (f) {
-                matchedCollection.addField(f);
-            });
-        }
-    };
-    MongoDBMappingConfiguration.prototype.doesMappingExist = function (mapping) {
-        if (this.mapping) {
-            var match = this.mapping.find(function (c) { return c.collectionName === mapping.collectionName; });
-            return match ? match : null;
-        }
-        else {
-            return null;
-        }
-    };
-    MongoDBMappingConfiguration.prototype.generateId = function () {
-        var now = new Date().getTime();
-        return "mapping_" + now;
-    };
-    MongoDBMappingConfiguration.prototype.getPrimaryCollection = function () {
-        if (this.mapping && this.mapping.length > 0) {
-            return this.mapping.find(function (m) { return m.primary; });
-        }
-        else {
-            return null;
-        }
-    };
-    return MongoDBMappingConfiguration;
-}());
-exports.MongoDBMappingConfiguration = MongoDBMappingConfiguration;
-var MongoDBCollectionMapping = /** @class */ (function () {
-    function MongoDBCollectionMapping(mapping) {
-        var _this = this;
-        if (mapping) {
-            this.collectionName = mapping.collectionName;
-            this.primary = mapping.primary ? true : false;
-            if (mapping.fields) {
-                mapping.fields.forEach(function (f) { return _this.addField(f); });
-            }
-            else {
-                this.fields = [];
-            }
-        }
-    }
-    MongoDBCollectionMapping.prototype.addField = function (field) {
-        this.fields = this.fields ? this.fields : [];
-        var match = this.fields.find(function (f) { return f.name === field.name; });
-        if (!match) {
-            this.fields.push(field);
-        }
-    };
-    return MongoDBCollectionMapping;
-}());
-exports.MongoDBCollectionMapping = MongoDBCollectionMapping;
-var MongoDBField = /** @class */ (function () {
-    function MongoDBField(field) {
-        if (field) {
-            this.name = field.name;
-            this.selected = field.selected;
-        }
-    }
-    return MongoDBField;
-}());
-exports.MongoDBField = MongoDBField;
+// export class MongoDBMappingConfiguration {
+//     public mappingName: string;
+//     public connectionString: string;
+//     public databaseName: string;
+//     public mapping: MongoDBCollectionMapping[];
+//     public mappingId: string;
+//     constructor(config?) {
+//         if (config) {
+//             this.mappingName = config.mappingName;
+//             this.connectionString = config.connectionString;
+//             this.databaseName = config.databaseName;
+//             this.mappingId = config.mappingId;
+//             if (config.mapping) {
+//                 config.mapping.forEach( m => this.addMapping(new MongoDBCollectionMapping(m)));
+//             }
+//         } else {
+//             this.mappingId = this.generateId();
+//         }
+//     }
+//     addMapping(mapping: MongoDBCollectionMapping) {
+//         this.mapping = this.mapping ? this.mapping : [];
+//         const matchedCollection = this.doesMappingExist(mapping);
+//         if (!matchedCollection) {
+//             this.mapping.push(mapping);
+//         } else {
+//             matchedCollection.primary = mapping.primary;
+//             mapping.fields.forEach( f => {
+//                 matchedCollection.addField(f);
+//             });
+//         }
+//     }
+//     doesMappingExist(mapping: MongoDBCollectionMapping): MongoDBCollectionMapping {
+//         if (this.mapping) {
+//             const match = this.mapping.find( c => c.collectionName === mapping.collectionName );
+//             return match ? match : null;
+//         } else {
+//             return null;
+//         }
+//     }
+//     generateId(): string {
+//         const now = new Date().getTime();
+//         return `mapping_${now}`;
+//     }
+//     getPrimaryCollection(): MongoDBCollectionMapping {
+//         if (this.mapping && this.mapping.length > 0) {
+//             return this.mapping.find( m => m.primary );
+//         } else {
+//             return null;
+//         }
+//     }
+// }
+//
+// export class MongoDBCollectionMapping {
+//     public collectionName: string;
+//     public primary: boolean;
+//     public fields: MongoDBField[];
+//     constructor(mapping?) {
+//         if (mapping) {
+//             this.collectionName = mapping.collectionName;
+//             this.primary = mapping.primary ? true : false;
+//             if (mapping.fields) {
+//                 mapping.fields.forEach( f => this.addField(f) );
+//             } else {
+//                 this.fields = [];
+//             }
+//         }
+//     }
+//     addField(field: MongoDBField) {
+//         this.fields = this.fields ? this.fields : [];
+//         const match = this.fields.find( f => f.name === field.name );
+//         if (!match) {
+//             this.fields.push(field);
+//         }
+//     }
+// }
+//
+// export class MongoDBField {
+//     public name: string;
+//     public selected: boolean;
+//     constructor(field?) {
+//         if (field) {
+//             this.name = field.name;
+//             this.selected = field.selected;
+//         }
+//     }
+// }
 //# sourceMappingURL=mongo-dbmapping-configuration.js.map

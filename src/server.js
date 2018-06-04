@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var ModelerApi = require("./modeler/modelerApi");
-var DatabaseApi = require("./database/databaseApi");
+// import * as ModelerApi from './modeler/modelerApi';
+// import * as DatabaseApi from './database/databaseApi';
 var MongoConfigApi = require("./mongo/mongo-config-api");
 var Server = /** @class */ (function () {
     function Server() {
@@ -22,8 +22,8 @@ var Server = /** @class */ (function () {
         this._app.use(this._bodyParser.json());
         this._app.use(this._express.static(this._path.join(__dirname + './')));
         this._app.use(this._cors());
-        this._app.use('/model', ModelerApi);
-        this._app.use('/database', DatabaseApi);
+        // this._app.use('/model', ModelerApi);
+        // this._app.use('/database', DatabaseApi);
         this._app.use('/mongo', MongoConfigApi);
         console.log("server listening on " + (process.env.PORT || 3000));
     }
