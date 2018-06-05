@@ -37,14 +37,33 @@ export class MongoConfigApi {
             response.status(200).json(savedConfig);
         });
 
+        this.router.post('/open', async (request, response) => {
+            const connection = new MongoDbConnection(request.body.connection);
+            const mappingId = request.body.mappingId;
+            const config = await this.openModel(connection, mappingId);
+            response.status(200).json(config);
+        });
+
+        this.router.post('/configs', async (request, response) => {
+            const connection = new MongoDbConnection(request.body);
+            const configs = await this.getConfigs(connection);
+            response.status(200).json(configs);
+        });
+
+        this.router.post('/delete', async (request, response) => {
+            const config = new MongoDbConfiguration(request.body);
+            const result = await this.deleteModel(config);
+            response.status(200).json(result);
+        });
+
         module.exports = this.router;
     }
     async connect(connection: MongoDbConnection): Promise<MongoClient> {
         const client = await MongoClient.connect(connection.connectionString);
         return client;
     }
-    async saveModel(config: MongoDbConfiguration) {
-        config.mappingId = `config_${new Date().getTime()}`;
+    async saveModel(config: MongoDbConfiguration): Promise<MongoDbConfiguration> {
+        config.mappingId = config.mappingId ? config.mappingId : `config_${new Date().getTime()}`;
         const client = await this.connect(config.getConnection());
         const db = client.db('embed');
         const collection = db.collection('mongo-configs');
@@ -53,8 +72,7 @@ export class MongoConfigApi {
             { $set: config },
             { upsert: true});
         await client.close();
-        const _config = await this.openModel(config.getConnection(), config.mappingId);
-        return _config;
+        return await this.openModel(config.getConnection(), config.mappingId);
     }
     async getDatabases(connection: MongoDbConnection): Promise<MongoDatabase[]> {
         const client = await this.connect(connection);
@@ -76,11 +94,23 @@ export class MongoConfigApi {
         client.close();
         return Object.keys(one);
     }
-    async openModel(connection: MongoDbConnection, mappingId: string) {
+    async openModel(connection: MongoDbConnection, mappingId: string): Promise<MongoDbConfiguration> {
         const client = await this.connect(connection);
-        const collection = client.db(connection.databaseName).collection('mongo-configs');
-        const config = await collection.find( { mappingId: mappingId }).toArray();
-        return config;
+        const collection = client.db('embed').collection('mongo-configs');
+        const config = await collection.findOne( { mappingId: mappingId });
+        return new MongoDbConfiguration(config);
+    }
+    async getConfigs(connection: MongoDbConnection): Promise<MongoDbConfiguration[]> {
+        const client = await this.connect(connection);
+        const collection = client.db('embed').collection('mongo-configs');
+        const configs = await collection.find({}).toArray();
+        return configs.map( c => new MongoDbConfiguration(c) );
+    }
+    async deleteModel(config: MongoDbConfiguration): Promise<boolean> {
+        const client = await this.connect(config.getConnection());
+        const collection = client.db('embed').collection('mongo-configs');
+        const res = await collection.deleteOne({ mappingId: config.mappingId });
+        return res.deletedCount === 1;
     }
 }
 

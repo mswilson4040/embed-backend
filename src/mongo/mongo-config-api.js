@@ -105,6 +105,49 @@ var MongoConfigApi = /** @class */ (function () {
                 }
             });
         }); });
+        this.router.post('/open', function (request, response) { return __awaiter(_this, void 0, void 0, function () {
+            var connection, mappingId, config;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        connection = new mongo_db_connection_1.MongoDbConnection(request.body.connection);
+                        mappingId = request.body.mappingId;
+                        return [4 /*yield*/, this.openModel(connection, mappingId)];
+                    case 1:
+                        config = _a.sent();
+                        response.status(200).json(config);
+                        return [2 /*return*/];
+                }
+            });
+        }); });
+        this.router.post('/configs', function (request, response) { return __awaiter(_this, void 0, void 0, function () {
+            var connection, configs;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        connection = new mongo_db_connection_1.MongoDbConnection(request.body);
+                        return [4 /*yield*/, this.getConfigs(connection)];
+                    case 1:
+                        configs = _a.sent();
+                        response.status(200).json(configs);
+                        return [2 /*return*/];
+                }
+            });
+        }); });
+        this.router.post('/delete', function (request, response) { return __awaiter(_this, void 0, void 0, function () {
+            var config, result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        config = new mongo_db_configuration_1.MongoDbConfiguration(request.body);
+                        return [4 /*yield*/, this.deleteModel(config)];
+                    case 1:
+                        result = _a.sent();
+                        response.status(200).json(result);
+                        return [2 /*return*/];
+                }
+            });
+        }); });
         module.exports = this.router;
     }
     MongoConfigApi.prototype.connect = function (connection) {
@@ -122,11 +165,11 @@ var MongoConfigApi = /** @class */ (function () {
     };
     MongoConfigApi.prototype.saveModel = function (config) {
         return __awaiter(this, void 0, void 0, function () {
-            var client, db, collection, res, _config;
+            var client, db, collection, res;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        config.mappingId = "config_" + new Date().getTime();
+                        config.mappingId = config.mappingId ? config.mappingId : "config_" + new Date().getTime();
                         return [4 /*yield*/, this.connect(config.getConnection())];
                     case 1:
                         client = _a.sent();
@@ -139,9 +182,7 @@ var MongoConfigApi = /** @class */ (function () {
                     case 3:
                         _a.sent();
                         return [4 /*yield*/, this.openModel(config.getConnection(), config.mappingId)];
-                    case 4:
-                        _config = _a.sent();
-                        return [2 /*return*/, _config];
+                    case 4: return [2 /*return*/, _a.sent()];
                 }
             });
         });
@@ -211,11 +252,45 @@ var MongoConfigApi = /** @class */ (function () {
                     case 0: return [4 /*yield*/, this.connect(connection)];
                     case 1:
                         client = _a.sent();
-                        collection = client.db(connection.databaseName).collection('mongo-configs');
-                        return [4 /*yield*/, collection.find({ mappingId: mappingId }).toArray()];
+                        collection = client.db('embed').collection('mongo-configs');
+                        return [4 /*yield*/, collection.findOne({ mappingId: mappingId })];
                     case 2:
                         config = _a.sent();
-                        return [2 /*return*/, config];
+                        return [2 /*return*/, new mongo_db_configuration_1.MongoDbConfiguration(config)];
+                }
+            });
+        });
+    };
+    MongoConfigApi.prototype.getConfigs = function (connection) {
+        return __awaiter(this, void 0, void 0, function () {
+            var client, collection, configs;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.connect(connection)];
+                    case 1:
+                        client = _a.sent();
+                        collection = client.db('embed').collection('mongo-configs');
+                        return [4 /*yield*/, collection.find({}).toArray()];
+                    case 2:
+                        configs = _a.sent();
+                        return [2 /*return*/, configs.map(function (c) { return new mongo_db_configuration_1.MongoDbConfiguration(c); })];
+                }
+            });
+        });
+    };
+    MongoConfigApi.prototype.deleteModel = function (config) {
+        return __awaiter(this, void 0, void 0, function () {
+            var client, collection, res;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.connect(config.getConnection())];
+                    case 1:
+                        client = _a.sent();
+                        collection = client.db('embed').collection('mongo-configs');
+                        return [4 /*yield*/, collection.deleteOne({ mappingId: config.mappingId })];
+                    case 2:
+                        res = _a.sent();
+                        return [2 /*return*/, res.deletedCount === 1];
                 }
             });
         });
