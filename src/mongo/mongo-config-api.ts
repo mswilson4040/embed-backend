@@ -2,6 +2,7 @@ import { MongoClient } from 'mongodb';
 import { MongoDbConnection } from '../database/models/mongo-db-connection';
 import { MongoDatabase } from '../database/models/mongo-database';
 import { MongoDbConfiguration } from '../database/models/mongo-db-configuration';
+import { MongoQueryBuilder } from '../database/models/mongo-query-builder';
 
 export class MongoConfigApi {
     public express: any = null;
@@ -17,43 +18,42 @@ export class MongoConfigApi {
             const databases = await this.getDatabases(connection);
             response.status(200).json(databases);
         });
-
         this.router.post('/databases/collections', async (request, response) => {
             const connection = new MongoDbConnection(request.body);
             const collections = await this.getCollections(connection);
             response.status(200).json(collections);
         });
-
         this.router.post('/databases/collections/fields', async (request, response) => {
             const connection = new MongoDbConnection(request.body.connection);
             const collectionName = request.body.collectionName;
             const fields = await this.getFieldsFromCollection(connection, collectionName);
             response.status(200).json(fields);
         });
-
         this.router.post('/save', async (request, response) => {
             const config = new MongoDbConfiguration(request.body);
             const savedConfig = await this.saveModel(config);
             response.status(200).json(savedConfig);
         });
-
         this.router.post('/open', async (request, response) => {
             const connection = new MongoDbConnection(request.body.connection);
             const mappingId = request.body.mappingId;
             const config = await this.openModel(connection, mappingId);
             response.status(200).json(config);
         });
-
         this.router.post('/configs', async (request, response) => {
             const connection = new MongoDbConnection(request.body);
             const configs = await this.getConfigs(connection);
             response.status(200).json(configs);
         });
-
         this.router.post('/delete', async (request, response) => {
             const config = new MongoDbConfiguration(request.body);
             const result = await this.deleteModel(config);
             response.status(200).json(result);
+        });
+        this.router.post('/sample', async (request, response) => {
+            const config = new MongoDbConfiguration(request.body);
+            const data = await this.getSampleData(config);
+            response.status(200).json(data);
         });
 
         module.exports = this.router;
@@ -111,6 +111,11 @@ export class MongoConfigApi {
         const collection = client.db('embed').collection('mongo-configs');
         const res = await collection.deleteOne({ mappingId: config.mappingId });
         return res.deletedCount === 1;
+    }
+    async getSampleData(config: MongoDbConfiguration): Promise<any> {
+        const builder = new MongoQueryBuilder(config);
+
+        return [];
     }
 }
 
