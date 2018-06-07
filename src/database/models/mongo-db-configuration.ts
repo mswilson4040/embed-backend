@@ -1,6 +1,7 @@
 import { MongoDbConnection } from './mongo-db-connection';
 import { MongoDbMapping } from './mongo-db-mapping';
 import { MongoDbCollection } from './mongo-db-collection';
+import { MongoDbField } from './mongo-db-field';
 
 export class MongoDbConfiguration {
     public databaseName: string;
@@ -33,5 +34,38 @@ export class MongoDbConfiguration {
         mapping.collection = new MongoDbCollection(collection);
         mapping.fields = fields ? fields : [];
         this.addMapping(mapping);
+    }
+    getPrimaryCollection(): MongoDbMapping {
+        if (this.mapping) {
+            const primary = this.mapping.find( m => m.collection.primary );
+            return primary;
+        }
+        return null;
+    }
+    doesFieldExist(field: MongoDbField): boolean {
+        let fieldExists = false;
+        if (this.mapping) {
+            this.mapping.forEach( m => {
+                const fields = m.fields.filter( f => f.selected );
+                const match = fields.find( f => f.name === field.name );
+                if (match) {
+                    fieldExists = true;
+                }
+            });
+        }
+        return fieldExists;
+    }
+    getDisplayColumnNames(): string[] {
+        const fields = [];
+        if (this.mapping) {
+            this.mapping.forEach( m => {
+                m.fields.forEach( f => {
+                    if (f.selected) {
+                        fields.push(f.name);
+                    }
+                });
+            });
+        }
+        return fields;
     }
 }

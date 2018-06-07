@@ -112,10 +112,30 @@ export class MongoConfigApi {
         const res = await collection.deleteOne({ mappingId: config.mappingId });
         return res.deletedCount === 1;
     }
-    async getSampleData(config: MongoDbConfiguration): Promise<any> {
-        const builder = new MongoQueryBuilder(config);
-
-        return [];
+    async getSampleData(config: MongoDbConfiguration) {
+        const qBuilder = new MongoQueryBuilder(config);
+        const primaryMapping = config.getPrimaryCollection();
+        if (primaryMapping) {
+            const mappings = qBuilder.getSelectedMappings();
+            if (mappings && mappings.length > 0) {
+                const connection = config.getConnection();
+                const client = await this.connect(connection);
+                const db = client.db(connection.databaseName);
+                if (mappings.length === 1) {
+                    const docs = await db.collection(primaryMapping.collection.name).find(
+                        {},
+                        { projection: qBuilder.getProjectedFields(primaryMapping) }
+                        ).limit(25).toArray();
+                    return docs;
+                } else {
+                    const docs = await db.collection(primaryMapping.collection.name).aggregate(qBuilder.getAggregates())
+                        .limit(25).toArray();
+                    return docs;
+                }
+            }
+        } else {
+            return [];
+        }
     }
 }
 

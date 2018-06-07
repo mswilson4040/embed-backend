@@ -12,6 +12,6 @@ export class MongoDbMapping {
     }
     hasFieldsSelected(): boolean {
         const fields = this.fields.filter( f => f.selected );
-        return fields ? true : false;
+        return fields && fields.length > 0 ? true : false;
     }
 }
