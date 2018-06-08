@@ -13,7 +13,44 @@ export class MongoQueryBuilder {
             // TODO: Else you just need to run the regular this.getFindQuery();
     }
     getAggregates() {
-        return [];
+        const pipeline = [];
+        for (let i = 0; i < this._config.mapping.length; i++) {
+            const mapping = this._config.mapping[i];
+            if (!mapping.collection.primary) {
+                const lookup = {
+                    $lookup: {
+                        from: mapping.collection.name,
+                        foreignField: mapping.foreignField,
+                        localField: mapping.localField,
+                        as: mapping.collection.name
+                    }
+                };
+                const unwind = {
+                    $unwind: `$${mapping.collection.name}`
+                };
+                const replaceRoot = {
+                    $replaceRoot: {
+                        newRoot: {
+                            $mergeObjects: [
+                                {
+                                    $arrayToObject: {
+                                        $filter: {
+                                            input: { $objectToArray: '$$ROOT' },
+                                            cond: { $not: { $in: [ '$$this.k', [ '_id', mapping.collection.name, mapping.localField ] ] } }
+                                        }
+                                    }
+                                },
+                                `$${mapping.collection.name}`
+                            ]
+                        }
+                    }
+                };
+                pipeline.push(lookup);
+                pipeline.push(unwind);
+                pipeline.push(replaceRoot);
+            }
+        }
+        return pipeline;
     }
     getSelectedMappings(): MongoDbMapping[] {
         return this._config.mapping.filter( m => m.hasFieldsSelected() );
